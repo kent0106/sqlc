@@ -159,9 +159,10 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 		if len(query.Params) == 1 {
 			p := query.Params[0]
 			gq.Arg = QueryValue{
-				Name:    paramName(p),
-				Typ:     goType(r, p.Column, settings),
-				IsSlice: isSlice(p.Column),
+				Name:      paramName(p),
+				Typ:       goType(r, p.Column, settings),
+				IsSlice:   isSlice(p.Column),
+				NameSpace: settings.Go.Package,
 			}
 		} else if len(query.Params) > 1 {
 			var cols []goColumn
@@ -173,18 +174,20 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 				})
 			}
 			gq.Arg = QueryValue{
-				Emit:   true,
-				Name:   "arg",
-				Struct: columnsToStruct(r, gq.MethodName+"Params", cols, settings), //@TODO xiazemin 数组一会儿处理
+				Emit:      true,
+				Name:      "arg",
+				Struct:    columnsToStruct(r, gq.MethodName+"Params", cols, settings), //@TODO xiazemin 数组一会儿处理
+				NameSpace: settings.Go.Package,
 			}
 		}
 
 		if len(query.Columns) == 1 {
 			c := query.Columns[0]
 			gq.Ret = QueryValue{
-				Name:    columnName(c, 0),
-				Typ:     goType(r, c, settings), //获取类型从这里进入
-				IsSlice: isSlice(c),
+				Name:      columnName(c, 0),
+				Typ:       goType(r, c, settings), //获取类型从这里进入
+				IsSlice:   isSlice(c),
+				NameSpace: settings.Go.Package,
 			}
 		} else if len(query.Columns) > 1 {
 			var gs *Struct
@@ -223,9 +226,10 @@ func buildQueries(r *compiler.Result, settings config.CombinedSettings, structs 
 				emit = true
 			}
 			gq.Ret = QueryValue{
-				Emit:   emit,
-				Name:   "i",
-				Struct: gs,
+				Emit:      emit,
+				Name:      "i",
+				Struct:    gs,
+				NameSpace: settings.Go.Package,
 			}
 		}
 		util.Xiazeminlog(" result gq", gq, false)

@@ -8,12 +8,13 @@ import (
 )
 
 type QueryValue struct {
-	Emit    bool
-	Name    string
-	Struct  *Struct
-	Typ     string
-	IsSlice bool
-	Slice   []*QueryValue
+	Emit      bool
+	Name      string
+	Struct    *Struct
+	Typ       string
+	IsSlice   bool
+	Slice     []*QueryValue
+	NameSpace string
 }
 
 func (v QueryValue) EmitStruct() bool {
@@ -76,9 +77,25 @@ func (v QueryValue) ContainSlice() bool {
 	return false
 }
 
-var functions map[string]string = make(map[string]string)
-var shouldGenFunctions map[string]bool = make(map[string]bool)
-var shouldGenFunctionsImport map[string]bool = make(map[string]bool)
+type genFunctions struct {
+	functions                map[string]string
+	shouldGenFunctions       map[string]bool
+	shouldGenFunctionsImport map[string]bool
+}
+
+var nameSpaceToGenFunctions map[string]*genFunctions = make(map[string]*genFunctions)
+
+func getGenFunctionsByNs(namespace string) *genFunctions {
+	genFunctionsInNS, ok := nameSpaceToGenFunctions[namespace]
+	if !ok {
+		genFunctionsInNS = &genFunctions{
+			functions:                make(map[string]string),
+			shouldGenFunctions:       make(map[string]bool),
+			shouldGenFunctionsImport: make(map[string]bool),
+		}
+	}
+	return genFunctionsInNS
+}
 
 func (v QueryValue) ShouldGenFunctionsImport() bool {
 	result := false
@@ -88,20 +105,24 @@ func (v QueryValue) ShouldGenFunctionsImport() bool {
 			for _, f := range v.Struct.Fields {
 				if f.IsSlice {
 					functionName := formatType(f.Type) + "Slice2interface"
-					if _, ok := shouldGenFunctionsImport[functionName]; ok {
+					genFunctionsByNs := getGenFunctionsByNs(v.NameSpace)
+					if _, ok := genFunctionsByNs.shouldGenFunctionsImport[functionName]; ok {
 						continue
 					}
-					shouldGenFunctionsImport[functionName] = true
+					genFunctionsByNs.shouldGenFunctionsImport[functionName] = true
+					nameSpaceToGenFunctions[v.NameSpace] = genFunctionsByNs
 					result = true
 				}
 			}
 		}
 		if v.IsSlice {
 			functionName := formatType(v.Typ) + "Slice2interface"
-			if _, ok := shouldGenFunctionsImport[functionName]; ok {
+			genFunctionsByNs := getGenFunctionsByNs(v.NameSpace)
+			if _, ok := genFunctionsByNs.shouldGenFunctionsImport[functionName]; ok {
 				return false
 			}
-			shouldGenFunctionsImport[functionName] = true
+			genFunctionsByNs.shouldGenFunctionsImport[functionName] = true
+			nameSpaceToGenFunctions[v.NameSpace] = genFunctionsByNs
 			result = true
 		}
 
@@ -117,20 +138,24 @@ func (v QueryValue) ShouldGenFunctions() bool {
 			for _, f := range v.Struct.Fields {
 				if f.IsSlice {
 					functionName := formatType(f.Type) + "Slice2interface"
-					if _, ok := shouldGenFunctions[functionName]; ok {
+					genFunctionsByNs := getGenFunctionsByNs(v.NameSpace)
+					if _, ok := genFunctionsByNs.shouldGenFunctions[functionName]; ok {
 						continue
 					}
-					shouldGenFunctions[functionName] = true
+					genFunctionsByNs.shouldGenFunctions[functionName] = true
+					nameSpaceToGenFunctions[v.NameSpace] = genFunctionsByNs
 					result = true
 				}
 			}
 		}
 		if v.IsSlice {
 			functionName := formatType(v.Typ) + "Slice2interface"
-			if _, ok := shouldGenFunctions[functionName]; ok {
+			genFunctionsByNs := getGenFunctionsByNs(v.NameSpace)
+			if _, ok := genFunctionsByNs.shouldGenFunctions[functionName]; ok {
 				return false
 			}
-			shouldGenFunctions[functionName] = true
+			genFunctionsByNs.shouldGenFunctions[functionName] = true
+			nameSpaceToGenFunctions[v.NameSpace] = genFunctionsByNs
 			result = true
 		}
 
@@ -151,25 +176,52 @@ func (v QueryValue) GenerateFunctions() string {
 	   }
 
 	   `
+
+		batchTemplate := `
+		//if len(IDs)>65536,mysql will return error
+		func BatchRun%s(batch int, IDs []%s, fn func([]%s) error) error {
+		for i := 0; i <= len(IDs)/batch; i++ {
+			l := i * batch
+			r := (i + 1) * batch
+			if r > len(IDs) {
+				r = len(IDs)
+			}
+			if r > l {
+				batchIDs := IDs[l:r]
+				if err := fn(batchIDs); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	}
+	   `
 		if v.Struct != nil {
 			for _, f := range v.Struct.Fields {
 				if f.IsSlice {
 					functionName := formatType(f.Type) + "Slice2interface"
-					if _, ok := functions[functionName]; ok {
+
+					genFunctionsByNs := getGenFunctionsByNs(v.NameSpace)
+					if _, ok := genFunctionsByNs.functions[functionName]; ok {
 						continue
 					}
 					result += fmt.Sprintf(template, formatType(f.Type), f.Type)
-					functions[functionName] = result
+					result += fmt.Sprintf(batchTemplate, formatType(f.Type), f.Type, f.Type)
+					genFunctionsByNs.functions[functionName] = result
+					nameSpaceToGenFunctions[v.NameSpace] = genFunctionsByNs
 				}
 			}
 		}
 		if v.IsSlice {
 			functionName := formatType(v.Typ) + "Slice2interface"
-			if _, ok := functions[functionName]; ok {
+			genFunctionsByNs := getGenFunctionsByNs(v.NameSpace)
+			if _, ok := genFunctionsByNs.functions[functionName]; ok {
 				return result
 			}
 			result += fmt.Sprintf(template, formatType(v.Typ), v.Typ)
-			functions[functionName] = result
+			result += fmt.Sprintf(batchTemplate, formatType(v.Typ), v.Typ, v.Typ)
+			genFunctionsByNs.functions[functionName] = result
+			nameSpaceToGenFunctions[v.NameSpace] = genFunctionsByNs
 		}
 
 	}
