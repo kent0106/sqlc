@@ -130,7 +130,7 @@ func Generate(e Env, dir, filename string, stderr io.Writer) (map[string]string,
 		// TODO: This feels like a hack that will bite us later
 		joined := make([]string, 0, len(sql.Schema))
 		for _, s := range sql.Schema {
-			if err := generator.Generate(string(sql.Engine), sql.DSN, filepath.Join(dir, s)); err != nil {
+			if err := generator.Generate(string(sql.Engine), sql.DSN, sql.Tables, filepath.Join(dir, s)); err != nil {
 				fmt.Println(err)
 			}
 			joined = append(joined, filepath.Join(dir, s))

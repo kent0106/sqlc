@@ -19,9 +19,8 @@ type schemaFetcher interface {
 }
 
 // Generate generates code for the given driverName.
-func Generate(driverName string, dsn, path string) error {
+func Generate(driverName string, dsn string, tableNames []string, path string) error {
 	//dataSourceName, tableNames := parseArgs(exampleDataSourceName)
-	var tableNames []string //@TODO add config
 	if dsn == "" {
 		return fmt.Errorf("Notice: dsn not configured,schema may have difference")
 	}
