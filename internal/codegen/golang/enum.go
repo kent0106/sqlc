@@ -28,8 +28,15 @@ func EnumReplace(value string) string {
 	id = strings.Replace(id, ":", "_", -1)
 	id = strings.Replace(id, "/", "_", -1)
 	if reHan.Match([]byte(value)) {
-		results := pinyin.LazyConvert(value, nil)
-		id = strings.Join(results, "_")
+		matches := reHan.FindAllStringIndex(value, -1)
+		val1 := ""
+		last := 0
+		for _, m := range matches {
+			results := pinyin.LazyConvert(value[m[0]:m[1]], nil)
+			val1 = val1 + value[last:m[0]] + strings.Join(results, "_")
+			last = m[1]
+		}
+		id = val1
 	}
 	return IdentPattern.ReplaceAllString(id, "")
 }
