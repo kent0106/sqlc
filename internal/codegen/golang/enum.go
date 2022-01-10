@@ -3,6 +3,8 @@ package golang
 import (
 	"regexp"
 	"strings"
+
+	pinyin "github.com/mozillazg/go-pinyin"
 )
 
 var IdentPattern = regexp.MustCompile("[^a-zA-Z0-9_]+")
@@ -19,10 +21,16 @@ type Enum struct {
 	Constants []Constant
 }
 
+var reHan = regexp.MustCompile("[\u4E00-\u9FFF]+")
+
 func EnumReplace(value string) string {
 	id := strings.Replace(value, "-", "_", -1)
 	id = strings.Replace(id, ":", "_", -1)
 	id = strings.Replace(id, "/", "_", -1)
+	if reHan.Match([]byte(value)) {
+		results := pinyin.LazyConvert(value, nil)
+		id = strings.Join(results, "_")
+	}
 	return IdentPattern.ReplaceAllString(id, "")
 }
 

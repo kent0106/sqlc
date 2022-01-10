@@ -16,6 +16,7 @@ require (
 	github.com/lfittl/pg_query_go v1.0.2
 	github.com/lib/pq v1.10.1
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
+	github.com/mozillazg/go-pinyin v0.19.0 // indirect
 	github.com/pingcap/log v0.0.0-20210625125904-98ed8e2eb1c7 // indirect
 	github.com/pingcap/parser v0.0.0-20201024025010-3b2fb4b41d73
 	github.com/prometheus/tsdb v0.7.1 // indirect

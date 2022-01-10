@@ -36,6 +36,9 @@ func buildEnums(r *compiler.Result, settings config.CombinedSettings) []Enum {
 				Comment: enum.Comment,
 			}
 			for _, v := range enum.Vals {
+				util.Xiazeminlog("enum.Vals ", v, false)
+				util.Xiazeminlog("enum.Vals ", enumName, false)
+				util.Xiazeminlog("enum.Vals ", EnumReplace(v), false)
 				e.Constants = append(e.Constants, Constant{
 					Name:  StructName(enumName+"_"+EnumReplace(v), settings),
 					Value: v,
