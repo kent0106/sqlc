@@ -201,6 +201,10 @@ func (e *{{.Name}}) Scan(src interface{}) error {
 		*e = {{.Name}}(s)
 	case string:
 		*e = {{.Name}}(s)
+	{{if not .IsNotNull}}
+	case nil:
+		*e = {{.Name}}NULL
+	{{end}}
 	default:
 		return fmt.Errorf("unsupported scan type for {{.Name}}: %T", src)
 	}

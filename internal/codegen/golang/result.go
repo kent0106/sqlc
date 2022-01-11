@@ -49,7 +49,7 @@ func buildEnums(r *compiler.Result, settings config.CombinedSettings) []Enum {
 			if !enum.IsNotNull {
 				e.Constants = append(e.Constants, Constant{
 					Name:  StructName(enumName+"_"+"NULL", settings),
-					Value: "",
+					Value: "null",
 					Type:  e.Name,
 				})
 			}
