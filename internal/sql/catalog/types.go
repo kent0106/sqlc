@@ -31,8 +31,9 @@ func (c *Catalog) createEnum(stmt *ast.CreateEnumStmt) error {
 		return sqlerr.TypeExists(tbl.Name)
 	}
 	schema.Types = append(schema.Types, &Enum{
-		Name: stmt.TypeName.Name,
-		Vals: stringSlice(stmt.Vals),
+		Name:      stmt.TypeName.Name,
+		Vals:      stringSlice(stmt.Vals),
+		IsNotNull: stmt.IsNotNull,
 	})
 	return nil
 }

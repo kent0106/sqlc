@@ -6,6 +6,7 @@ import (
 
 	"github.com/xiazemin/sqlc/internal/sql/ast"
 	"github.com/xiazemin/sqlc/internal/sql/sqlerr"
+	"github.com/xiazemin/sqlc/internal/util"
 )
 
 func (c *Catalog) alterTable(stmt *ast.AlterTableStmt) error {
@@ -167,7 +168,8 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 				typeName := ast.TypeName{
 					Name: fmt.Sprintf("%s_%s", stmt.Name.Name, col.Colname),
 				}
-				s := &ast.CreateEnumStmt{TypeName: &typeName, Vals: col.Vals}
+				util.Xiazeminlog(" col.IsNotNull CreateEnumStmt", col, false)
+				s := &ast.CreateEnumStmt{TypeName: &typeName, Vals: col.Vals, IsNotNull: col.IsNotNull}
 				if err := c.createEnum(s); err != nil {
 					return err
 				}

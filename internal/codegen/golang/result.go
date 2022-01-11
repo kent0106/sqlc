@@ -32,8 +32,9 @@ func buildEnums(r *compiler.Result, settings config.CombinedSettings) []Enum {
 				enumName = schema.Name + "_" + enum.Name
 			}
 			e := Enum{
-				Name:    StructName(enumName, settings),
-				Comment: enum.Comment,
+				Name:      StructName(enumName, settings),
+				Comment:   enum.Comment,
+				IsNotNull: enum.IsNotNull,
 			}
 			for _, v := range enum.Vals {
 				util.Xiazeminlog("enum.Vals ", v, false)
@@ -42,6 +43,13 @@ func buildEnums(r *compiler.Result, settings config.CombinedSettings) []Enum {
 				e.Constants = append(e.Constants, Constant{
 					Name:  StructName(enumName+"_"+EnumReplace(v), settings),
 					Value: v,
+					Type:  e.Name,
+				})
+			}
+			if !enum.IsNotNull {
+				e.Constants = append(e.Constants, Constant{
+					Name:  StructName(enumName+"_"+"NULL", settings),
+					Value: "",
 					Type:  e.Name,
 				})
 			}

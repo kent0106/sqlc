@@ -40,6 +40,7 @@ type Constant struct {
 type Enum struct {
 	Name      string
 	Comment   string
+	IsNotNull bool
 	Constants []Constant
 }
 
@@ -234,8 +235,9 @@ func buildEnums(r *compiler.Result, settings config.CombinedSettings) []Enum {
 				enumName = schema.Name + "_" + enum.Name
 			}
 			e := Enum{
-				Name:    DataClassName(enumName, settings),
-				Comment: enum.Comment,
+				Name:      DataClassName(enumName, settings),
+				Comment:   enum.Comment,
+				IsNotNull: enum.IsNotNull,
 			}
 			for _, v := range enum.Vals {
 				e.Constants = append(e.Constants, Constant{

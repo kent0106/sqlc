@@ -18,6 +18,7 @@ type Constant struct {
 type Enum struct {
 	Name      string
 	Comment   string
+	IsNotNull bool
 	Constants []Constant
 }
 

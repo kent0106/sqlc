@@ -7,14 +7,13 @@ import (
 	"github.com/xiazemin/sqlc/internal/config"
 	"github.com/xiazemin/sqlc/internal/debug"
 	"github.com/xiazemin/sqlc/internal/sql/catalog"
+	"github.com/xiazemin/sqlc/internal/util"
 )
 
 func mysqlType(r *compiler.Result, col *compiler.Column, settings config.CombinedSettings) string {
 	columnType := col.DataType
 	notNull := col.NotNull || col.IsArray
-
 	switch columnType {
-
 	case "varchar", "text", "char", "tinytext", "mediumtext", "longtext":
 		if notNull {
 			return "string"
@@ -63,7 +62,11 @@ func mysqlType(r *compiler.Result, col *compiler.Column, settings config.Combine
 
 	case "enum":
 		// TODO: Proper Enum support
-		return "string"
+		if notNull {
+			return "string"
+		}
+		//enum('xz','xx') DEFAULT NULL,
+		return "sql.NullString"
 
 	case "date", "timestamp", "datetime", "time":
 		if notNull {
@@ -81,6 +84,7 @@ func mysqlType(r *compiler.Result, col *compiler.Column, settings config.Combine
 		return "json.RawMessage"
 
 	case "any":
+		util.Xiazeminlog("col.NotNull || col.IsArray any", columnType, true)
 		//如果是函数，会走到这个分支
 		return "interface{}"
 
@@ -101,6 +105,7 @@ func mysqlType(r *compiler.Result, col *compiler.Column, settings config.Combine
 		if debug.Active {
 			log.Printf("Unknown MySQL type: %s\n", columnType)
 		}
+		util.Xiazeminlog("col.NotNull || col.IsArray", columnType, true)
 		return "interface{}"
 
 	}

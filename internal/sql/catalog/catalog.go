@@ -203,9 +203,10 @@ type Type interface {
 }
 
 type Enum struct {
-	Name    string
-	Vals    []string
-	Comment string
+	Name      string
+	Vals      []string
+	IsNotNull bool
+	Comment   string
 }
 
 func (e *Enum) SetComment(c string) {

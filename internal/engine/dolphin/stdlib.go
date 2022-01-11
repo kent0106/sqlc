@@ -1183,6 +1183,7 @@ func defaultSchema(name string) *catalog.Schema {
 			},
 			ReturnType: &ast.TypeName{Name: "double"},
 		},
+		//"varchar", "text", "char", "tinytext", "mediumtext", "longtext":
 		{
 			Name: "IFNULL",
 			Args: []*catalog.Argument{
@@ -1190,10 +1191,82 @@ func defaultSchema(name string) *catalog.Schema {
 					Type: &ast.TypeName{Name: "any"},
 				},
 				{
-					Type: &ast.TypeName{Name: "string"},
+					Type: &ast.TypeName{Name: "varchar"},
 				},
 			},
-			ReturnType: &ast.TypeName{Name: "string"},
+			ReturnType: &ast.TypeName{Name: "varchar"},
+		},
+		{
+			Name: "IFNULL",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "text"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "text"},
+		},
+		{
+			Name: "IFNULL",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "char"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "char"},
+		},
+		{
+			Name: "IFNULL",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "tinytext"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "tinytext"},
+		},
+		{
+			Name: "IFNULL",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "mediumtext"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "mediumtext"},
+		},
+		{
+			Name: "IFNULL",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "longtext"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "longtext"},
+		},
+		{
+			Name: "IFNULL",
+			Args: []*catalog.Argument{
+				{
+					Type: &ast.TypeName{Name: "any"},
+				},
+				{
+					Type: &ast.TypeName{Name: "enum"},
+				},
+			},
+			ReturnType: &ast.TypeName{Name: "enum"},
 		},
 		{
 			Name: "IFNULL",
