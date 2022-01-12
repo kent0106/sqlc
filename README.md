@@ -83,3 +83,6 @@ IN (?) AND cond IN (?,?,?)
 IN (?,?,?) AND cond IN (?)
 
 
+//枚举支持中文，default null
+A const declaration gives names to constants, that is, values that are fixed at compile time. The value of a constant must be a number, string, or boolean.
+const的值只能是数字，字符串或者布尔值。所以不能生成sql.NullString
