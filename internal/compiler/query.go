@@ -33,7 +33,7 @@ type Query struct {
 	Comments              []string
 	InsertValuesLen       int64
 	InsertValuesParameter []Parameter
-
+	Omits                 []string
 	// XXX: Hack
 	Filename string
 }

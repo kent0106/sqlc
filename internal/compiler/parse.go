@@ -6,6 +6,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/xiazemin/sqlc/internal/sql/sqlerr"
+
 	"github.com/xiazemin/sqlc/internal/debug"
 	"github.com/xiazemin/sqlc/internal/metadata"
 	"github.com/xiazemin/sqlc/internal/opts"
@@ -71,8 +73,9 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	}
 
 	//每一个sql 语句的解析
-	name, cmd, err := metadata.Parse(strings.TrimSpace(rawSQL), c.parser.CommentSyntax())
+	name, cmd, omits, err := metadata.Parse(strings.TrimSpace(rawSQL), c.parser.CommentSyntax())
 	//解析出每个语句的函数名和后面的返回
+	util.Xiazeminlog("omits", omits, false)
 	if err != nil {
 		return nil, err
 	}
@@ -105,6 +108,10 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	util.Xiazeminlog("resolveCatalogRefs", params, false)
 	if err != nil {
 		return nil, err
+	}
+
+	if !validateOmits(omits, params) {
+		return nil, sqlerr.ColumnNotFound("", strings.Join(omits, ","))
 	}
 	valuesParams, length, err := resolveCatalogValuesRefs(c.catalog, rvs, refs, namedParams)
 
@@ -157,6 +164,7 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		SQL:                   trimmed,
 		InsertValuesLen:       length,
 		InsertValuesParameter: valuesParams,
+		Omits:                 omits,
 	}, nil
 }
 
@@ -200,4 +208,17 @@ func uniqueParamRefs(in []paramRef) []paramRef {
 		}
 	}
 	return o
+}
+
+func validateOmits(omits []string, params []Parameter) bool {
+	column := make(map[string]struct{}, len(params))
+	for _, p := range params {
+		column[p.Column.Name] = struct{}{}
+	}
+	for _, o := range omits {
+		if _, ok := column[o]; !ok {
+			return false
+		}
+	}
+	return true
 }

@@ -39,7 +39,7 @@ func validateQueryName(name string) error {
 	return nil
 }
 
-func Parse(t string, commentStyle CommentSyntax) (string, string, error) {
+func Parse(t string, commentStyle CommentSyntax) (string, string, []string, error) {
 	for _, line := range strings.Split(t, "\n") {
 		var prefix string
 		if strings.HasPrefix(line, "--") {
@@ -72,22 +72,32 @@ func Parse(t string, commentStyle CommentSyntax) (string, string, error) {
 			part = part[:len(part)-1] // removes the trailing "*/" element
 		}
 		if len(part) == 2 {
-			return "", "", fmt.Errorf("missing query type [':one', ':many', ':exec', ':execrows', ':execresult']: %s", line)
+			return "", "", nil, fmt.Errorf("missing query type [':one', ':many', ':exec', ':execrows', ':execresult']: %s", line)
 		}
-		if len(part) != 4 {
-			return "", "", fmt.Errorf("invalid query comment: %s", line)
+		if len(part) != 4 && len(part) != 6 {
+			return "", "", nil, fmt.Errorf("invalid query comment: %s", line)
 		}
 		queryName := part[2]
 		queryType := strings.TrimSpace(part[3])
 		switch queryType {
 		case CmdOne, CmdMany, CmdExec, CmdExecResult, CmdExecRows:
 		default:
-			return "", "", fmt.Errorf("invalid query type: %s", queryType)
+			return "", "", nil, fmt.Errorf("invalid query type: %s", queryType)
 		}
 		if err := validateQueryName(queryName); err != nil {
-			return "", "", err
+			return "", "", nil, err
 		}
-		return queryName, queryType, nil
+		var omits []string
+		if len(part) == 6 {
+			omits = parseOmits(part[5])
+		}
+		return queryName, queryType, omits, nil
 	}
-	return "", "", nil
+	return "", "", nil, nil
+}
+
+func parseOmits(omits string) []string {
+	omits = strings.TrimLeft(strings.TrimSpace(omits), "[")
+	omits = strings.TrimRight(omits, "]")
+	return strings.Split(omits, ",")
 }
