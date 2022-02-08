@@ -6,8 +6,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/xiazemin/sqlc/internal/sql/sqlerr"
-
 	"github.com/xiazemin/sqlc/internal/debug"
 	"github.com/xiazemin/sqlc/internal/metadata"
 	"github.com/xiazemin/sqlc/internal/opts"
@@ -15,6 +13,7 @@ import (
 	"github.com/xiazemin/sqlc/internal/sql/ast"
 	"github.com/xiazemin/sqlc/internal/sql/astutils"
 	"github.com/xiazemin/sqlc/internal/sql/rewrite"
+	"github.com/xiazemin/sqlc/internal/sql/sqlerr"
 	"github.com/xiazemin/sqlc/internal/sql/validate"
 	"github.com/xiazemin/sqlc/internal/util"
 )
